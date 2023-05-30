@@ -19,6 +19,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	_ "net/http/pprof" //nolint:gosec
 	"os"
 	"os/signal"
 	"sync"
@@ -35,7 +36,15 @@ import (
 
 func main() {
 	setupLog()
+	log.Info().Msg("logger initialized")
+
 	ctx, cf := context.WithCancel(context.Background())
+
+	go func() {
+		// TODO(log): Previously Fatal. Need to handle the error here.
+		//nolint:gosec // not internet facing.
+		log.Info().Err(http.ListenAndServe(":8080", nil))
+	}()
 
 	ghc, err := ghclients.NewGHClients(ctx, http.DefaultTransport)
 	if err != nil {
