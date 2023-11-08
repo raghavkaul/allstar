@@ -372,9 +372,13 @@ func TestEnforceAll(t *testing.T) {
 	}
 	getAppInstallations = func(ctx context.Context, ac *github.Client) ([]*github.Installation, error) {
 		var insts []*github.Installation
+		ownerLogin := "fake-owner"
 		appID := int64(123456)
 		inst := &github.Installation{
 			ID: &appID,
+			Account: &github.User{
+				Login: &ownerLogin,
+			},
 		}
 		insts = append(insts, inst)
 		return insts, nil
@@ -565,9 +569,13 @@ func TestSuspendedEnforce(t *testing.T) {
 	var gaicalled bool
 	getAppInstallations = func(ctx context.Context, ac *github.Client) ([]*github.Installation, error) {
 		var insts []*github.Installation
+		ownerLogin := "fake-owner"
 		appID := int64(123456)
 		inst := &github.Installation{
 			ID: &appID,
+			Account: &github.User{
+				Login: &ownerLogin,
+			},
 		}
 		if suspended {
 			inst.SuspendedAt = &github.Timestamp{}

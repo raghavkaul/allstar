@@ -107,6 +107,7 @@ func EnforceAll(ctx context.Context, ghc ghclients.GhClientsInterface, specificP
 			return nil, err
 		}
 		iid := i.GetID()
+		account := *i.Account.Login
 
 		g.Go(func() error {
 
@@ -143,6 +144,7 @@ func EnforceAll(ctx context.Context, ghc ghclients.GhClientsInterface, specificP
 			log.Info().
 				Str("area", "bot").
 				Int64("id", iid).
+				Str("account", account).
 				Int("count", len(repos)).
 				Msg("Enforcing policies on repos of installation.")
 
