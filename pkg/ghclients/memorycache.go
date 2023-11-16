@@ -53,7 +53,8 @@ func (c *memoryCache) Get(key string) (resp []byte, ok bool) {
 
 // Set saves response resp to the cache with key
 func (c *memoryCache) Set(key string, resp []byte) {
-	if strings.Contains(key, ".tar.gz") || strings.Contains(key, "tarball/") {
+	if strings.Contains(key, ".tar.gz") || strings.Contains(key, "tarball/") ||
+		strings.Contains(key, "contents/") {
 		// Don't cache tarballs.  Currently GitHub redirects tarball downloads to a
 		// URL that looks like this:
 		// "https://codeload.github.com/<owner>/<repo>/legacy.tar.gz/refs/heads/main"
