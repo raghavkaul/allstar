@@ -87,10 +87,12 @@ func (c *memoryCache) Delete(key string) {
 }
 
 func (c *memoryCache) LogCacheSize() {
+	c.mu.Lock()
 	var total int
 	for _, b := range c.items {
 		total = total + len(b)
 	}
+	c.mu.Unlock()
 	log.Info().
 		Str("area", "bot").
 		Int("size", total).

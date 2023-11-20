@@ -164,6 +164,7 @@ func EnforceAll(ctx context.Context, ghc ghclients.GhClientsInterface, specificP
 
 			if err != nil {
 				log.Error().
+					Int64("id", iid).
 					Err(err).
 					Msg("Unexpected error running policies.")
 				return nil
@@ -406,6 +407,13 @@ func runPoliciesReal(ctx context.Context, c *github.Client, owner, repo string, 
 				return nil, err
 			}
 		}
+
+		log.Info().
+			Str("org", owner).
+			Str("repo", repo).
+			Str("action", a).
+			Msg("Enforcement complete.")
+
 	}
 
 	return enforceResults, nil
