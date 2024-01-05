@@ -19,6 +19,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"sync"
@@ -56,6 +57,9 @@ func main() {
 			supportedPoliciesMsg += policyName
 		}
 	}
+	var profile bool
+	flag.BoolVar(&profile, "profile", false, "Enable debug profiler")
+
 	var runOnce bool
 	flag.BoolVar(&runOnce, "once", false, "Run EnforceAll once, instead of in a continuous loop.")
 
@@ -78,6 +82,14 @@ func main() {
 		log.Info().
 			Str("Repository filtering", *specificRepoArg).
 			Msg(fmt.Sprintf("Allstar will only run on repository %s", *specificRepoArg))
+	}
+
+	// Add debug profiler
+	if profile {
+		go func() {
+			log.Info().
+				Err(http.ListenAndServe("localhost:6060", nil))
+		}()
 	}
 
 	if runOnce {
