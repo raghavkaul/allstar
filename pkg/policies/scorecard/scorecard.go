@@ -79,7 +79,7 @@ type mergedConfig struct {
 }
 
 type details struct {
-	// Findings key is the check name, and value are logs from Scorecards.
+	// Findings key is the check name, and value are logs from Scorecard.
 	Findings map[string][]string
 }
 

@@ -8,6 +8,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/bradleyfalzon/ghinstallation/v2 v2.11.0
 	github.com/evanphx/json-patch/v5 v5.9.0
+	github.com/go-git/go-git/v5 v5.12.0
 	github.com/gobwas/glob v0.2.3
 	github.com/google/go-cmp v0.6.0
 	github.com/google/go-github/v59 v59.0.0
@@ -69,7 +70,6 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
-	github.com/go-git/go-git/v5 v5.12.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

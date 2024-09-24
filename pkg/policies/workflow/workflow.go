@@ -21,8 +21,8 @@ import (
 	"fmt"
 
 	"github.com/ossf/allstar/pkg/config"
+	"github.com/ossf/allstar/pkg/local"
 	"github.com/ossf/allstar/pkg/policydef"
-	"github.com/ossf/allstar/pkg/scorecard"
 	"github.com/ossf/scorecard/v5/checker"
 	"github.com/ossf/scorecard/v5/checks"
 
@@ -104,41 +104,56 @@ func (b Workflow) Check(ctx context.Context, c *github.Client, owner,
 		Msg("Check repo enabled")
 
 	fullName := fmt.Sprintf("%s/%s", owner, repo)
-	tr := c.Client().Transport
-	scc, err := scorecard.Get(ctx, fullName, tr)
+	lsc, err := local.GetLocal(ctx, fullName)
+	if err != nil {
+		return nil, err
+	}
+
+	branches, err := lsc.ListUpstreamBranches()
 	if err != nil {
 		return nil, err
 	}
 
 	l := checker.NewLogger()
-	cr := &checker.CheckRequest{
-		Ctx:        ctx,
-		RepoClient: scc.ScRepoClient,
-		Repo:       scc.ScRepo,
-		Dlogger:    l,
-	}
 
-	res := checks.DangerousWorkflow(cr)
-	if res.Error != nil {
-		msg := "Error while running checks.DangerousWorkflow"
-		log.Warn().
-			Str("org", owner).
-			Str("repo", repo).
-			Str("area", polName).
-			Err(res.Error).
-			Msg(msg)
-		return &policydef.Result{
-			Enabled:    enabled,
-			Pass:       true,
-			NotifyText: fmt.Sprintf("%s: %v", msg, res.Error),
-			Details:    details{},
-		}, nil
+	var pass bool
+	var reasons []string
+	for i := range branches {
+		b := branches[i]
+		lsc.Checkout(b)
+
+		cr := &checker.CheckRequest{
+			Ctx:        ctx,
+			RepoClient: lsc.LocalScRepoClient,
+			Repo:       lsc.LocalScRepo,
+			Dlogger:    l,
+		}
+
+		res := checks.DangerousWorkflow(cr)
+		if res.Error != nil {
+			msg := "Error while running checks.DangerousWorkflow"
+			log.Warn().
+				Str("org", owner).
+				Str("repo", repo).
+				Str("area", polName).
+				Err(res.Error).
+				Msg(msg)
+			return &policydef.Result{
+				Enabled:    enabled,
+				Pass:       true,
+				NotifyText: fmt.Sprintf("%s: %v", msg, res.Error),
+				Details:    details{},
+			}, nil
+		}
+		reasons = append(reasons, b)
+
+		pass = pass && (res.Score >= checker.MaxResultScore || res.Score == checker.InconclusiveResultScore)
 	}
 
 	logs := convertLogs(l.Flush())
-	pass := res.Score >= checker.MaxResultScore || res.Score == checker.InconclusiveResultScore
 	var notify string
 	if !pass {
+		desc := listJoin(reasons)
 		notify = fmt.Sprintf(`Project is out of compliance with Dangerous Workflow policy: %v
 
 **Rule Description**
@@ -147,7 +162,7 @@ Dangerous workflows are GitHub Action workflows that exhibit dangerous patterns 
 **Remediation Steps**
 Avoid the dangerous workflow patterns. See this [post](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/) for information on avoiding untrusted code checkouts. See this [document](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injections) for information on avoiding and mitigating the risk of script injections.
 `,
-			res.Reason)
+			desc)
 		if len(logs) > 10 {
 			notify += fmt.Sprintf(
 				"**First 10 Dangerous Patterns Found**\n\n%v"+
