@@ -1,4 +1,4 @@
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/ossf/allstar/badge)](https://api.securityscorecards.dev/projects/github.com/ossf/allstar)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/ossf/allstar/badge)](https://api.scorecard.dev/projects/github.com/ossf/allstar)
 
 <img align="right" src="artwork/openssf_allstar_alt.png" width="300" height="400">
 
@@ -54,9 +54,7 @@ that affect the security of your projects.  You can choose which security
 policies to monitor at both the organization and repository level, and how to
 handle policy violations.  You can also develop or contribute new policies.
 
-Allstar is developed under the [OpenSSF](https://openssf.org/) organization, as
-a part of the [Securing Critical Projects Working
-Group](https://github.com/ossf/wg-securing-critical-projects).
+Allstar is developed as a part of the [OpenSSF Scorecard](https://github.com/ossf/scorecard) project.
 
 ## [What's new with Allstar](whats-new.md)
 
@@ -323,8 +321,8 @@ here](https://pkg.go.dev/github.com/ossf/allstar/pkg/policies/workflow#OrgConfig
 
 This policy checks the GitHub Actions workflow configuration files
 (`.github/workflows`), for any patterns that match known dangerous
-behavior. See the [Security Scorecards
-Documentation](https://github.com/ossf/scorecard/blob/main/docs/checks.md#dangerous-workflow)
+behavior. See the [OpenSSF Scorecard
+documentation](https://github.com/ossf/scorecard/blob/main/docs/checks.md#dangerous-workflow)
 for more information on this check.
 
 ### Generic Scorecard Check
@@ -335,8 +333,8 @@ here](https://pkg.go.dev/github.com/ossf/allstar/pkg/policies/scorecard#OrgConfi
 
 This policy runs any scorecard check listed in the `checks` configuration. All
 checks run must have a score equal or above the `threshold` setting. Please see
-the [Security Scorecards
-Documentation](https://github.com/ossf/scorecard/blob/main/docs/checks.md)
+the [OpenSSF Scorecard
+documentation](https://github.com/ossf/scorecard/blob/main/docs/checks.md)
 for more information on each check.
 
 ### GitHub Actions

@@ -12,25 +12,19 @@ Conduct.](https://openssf.org/community/code-of-conduct/)
 * When contributing large features, upate [whats-new.md](whats-new.md)
 * All git commits must have [DCO](https://wiki.linuxfoundation.org/dco)
 
-## Contribitor Ladder
+## Contributor Ladder
 
-[contributor-ladder.md](contributor-ladder.md)
+Allstar follows the [OpenSSF Scorecard contributor ladder](https://github.com/ossf/scorecard/blob/main/CONTRIBUTOR_LADDER.md).
+
+Details on the previous Allstar contributor ladder can be found [here](/contributor-ladder.md).
 
 ## Community
 
-Allstar is a project under the [OpenSSF](https://openssf.org/)
-[Securing Critical
-Projects](https://github.com/ossf/wg-securing-critical-projects)
-Working Group ([Mailing
-List](https://lists.openssf.org/g/openssf-wg-securing-crit-prjs)).
+Allstar is a part of the [OpenSSF Scorecard](https://github.com/ossf/scorecard) project.
 
-Allstar [Slack Channel](https://openssf.slack.com/#allstar) for
-discussion.
+We're hanging out in [#allstar](https://openssf.slack.com/archives/C02UQ2RL0HM) on the OpenSSF Slack workspace.
 
-Bi-weekly meetings are Thursdays, 1-2pm, Pacific time. See the
-[OpenSSF
-Calendar](https://calendar.google.com/calendar/u/0?cid=czYzdm9lZmhwNWk5cGZsdGI1cTY3bmdwZXNAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ)
-for the invite.
+Meetings and additional community details are [here](https://github.com/ossf/scorecard#connect-with-the-scorecard-community).
 
 ## Development
 

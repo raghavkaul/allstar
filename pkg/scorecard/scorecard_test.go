@@ -16,11 +16,12 @@ package scorecard
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"testing"
 	time "time"
 
-	"github.com/ossf/scorecard/v4/clients"
+	"github.com/ossf/scorecard/v5/clients"
 )
 
 var initRepo func(clients.Repo, string, int) error
@@ -126,6 +127,10 @@ func (m mockRC) SearchCommits(request clients.SearchCommitsOptions) ([]clients.C
 
 func (m mockRC) Close() error {
 	return close()
+}
+
+func (m mockRC) GetFileReader(filename string) (io.ReadCloser, error) {
+	return nil, nil
 }
 
 func TestGetNew(t *testing.T) {
