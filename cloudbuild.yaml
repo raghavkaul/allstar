@@ -1,13 +1,12 @@
 steps:
-- name: golang:1.21
-  entrypoint: go
-  args: ['install', 'github.com/google/ko@v0.15.2']
-- name: golang:1.21
-  entrypoint: bash
-  args: ['-c', 'KO_DOCKER_REPO="gcr.io/allstar-ossf" /go/bin/ko publish ./cmd/allstar > container']
+- name: gcr.io/cloud-builders/docker
+  script: >
+    docker build -t
+    us-docker.pkg.dev/allstar-ossf/allstar-ossf/allstar:latest .
+  automapSubstitutions: true
 - name: gcr.io/google.com/cloudsdktool/cloud-sdk
   entrypoint: bash
-  args: ['-c', 'gcloud app deploy --appyaml=app-staging.yaml --project=allstar-ossf --image-url $(cat container)']
+  args: ['-c', 'gcloud app deploy --appyaml=app-staging.yaml --project=allstar-ossf --image-url us-docker.pkg.dev/allstar-ossf/allstar-ossf:latest']
 timeout: 1200s
 options:
   volumes:
