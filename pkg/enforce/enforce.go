@@ -192,7 +192,7 @@ func runPoliciesOnInstRepos(ctx context.Context, repos []*github.Repository, ghc
 		enforceResults, err := runPolicies(ctx, ghclient, *r.Owner.Login, *r.Name, enabled, specificPolicyArg)
 		if err != nil {
 			// scope of err doesn't extend outside the for loop
-			repoLoopErr = err
+			repoLoopErr = fmt.Errorf("couldn't run policy on %s/%s: %w", *r.Owner.Login, *r.Name, err)
 			break
 		}
 		if owner == "" {
@@ -343,7 +343,7 @@ func runPoliciesReal(ctx context.Context, c *github.Client, owner, repo string, 
 	for _, p := range ps {
 		repo_enabled, err := p.IsEnabled(ctx, c, owner, repo)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("couldn't check if policy was enabled: %w", err)
 		}
 		if !(repo_enabled && enabled) && doNothingOnOptOut {
 			log.Info().
@@ -356,7 +356,7 @@ func runPoliciesReal(ctx context.Context, c *github.Client, owner, repo string, 
 
 		r, err := p.Check(ctx, c, owner, repo)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("couldn't run policy check: %w", err)
 		}
 		log.Info().
 			Str("org", owner).
@@ -378,7 +378,7 @@ func runPoliciesReal(ctx context.Context, c *github.Client, owner, repo string, 
 			case "issue":
 				err := issueEnsure(ctx, c, owner, repo, p.Name(), r.NotifyText)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("couldn't create an issue: %w", err)
 				}
 			case "email":
 				log.Warn().
@@ -389,7 +389,7 @@ func runPoliciesReal(ctx context.Context, c *github.Client, owner, repo string, 
 			case "fix":
 				err := p.Fix(ctx, c, owner, repo)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("couldn't autofix issue: %w", err)
 				}
 			default:
 				log.Warn().
@@ -403,7 +403,7 @@ func runPoliciesReal(ctx context.Context, c *github.Client, owner, repo string, 
 		if r.Pass && (a == "issue" || a == "fix") {
 			err := issueClose(ctx, c, owner, repo, p.Name())
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("couldn't close GH issue for fixed policy: %w", err)
 			}
 		}
 	}

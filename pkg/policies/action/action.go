@@ -238,7 +238,7 @@ func (a Action) Check(ctx context.Context, c *github.Client, owner,
 	// in order to qualify.
 	wfs, err := listWorkflows(ctx, c, owner, repo)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("couldn't list workflows: %w", err)
 	}
 
 	// Create index of which workflows run which Actions
