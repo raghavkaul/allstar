@@ -18,7 +18,9 @@ package ghclients
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v59/github"
@@ -123,4 +125,34 @@ func getKeyReal(ctx context.Context) ([]byte, error) {
 		return []byte(privateKey), nil
 	}
 	return getKeyFromSecret(ctx, keySecret)
+}
+
+// Get GitHub App installation access token.
+func GetInstallationAccessToken(ctx context.Context, c *github.Client, org string) (string, error) {
+	inst, resp, err := c.Apps.FindOrganizationInstallation(ctx, org)
+
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("couldn't find GH app installation for org %s: %w (%s)", org, err, resp.Status)
+	}
+
+	url, err := url.Parse(inst.GetAccessTokensURL())
+	if err != nil {
+		return "", fmt.Errorf("url.Parse: %s %w", url, err)
+	}
+
+	var respJson struct {
+		Token string `json:"token"`
+	}
+
+	// github.Client should set Authorization header with JWT
+	resp, err = c.Do(ctx, &http.Request{
+		Method: "POST",
+		URL:    url,
+	}, respJson)
+
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("POST %s: %s %w", url, resp.Status, err)
+	}
+
+	return respJson.Token, nil
 }

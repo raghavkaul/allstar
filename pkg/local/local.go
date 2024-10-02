@@ -22,6 +22,7 @@ package local
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"sync"
@@ -29,6 +30,8 @@ import (
 	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/google/go-github/v59/github"
+	"github.com/ossf/allstar/pkg/ghclients"
 	"github.com/ossf/scorecard/v5/clients"
 	"github.com/ossf/scorecard/v5/clients/localdir"
 	"github.com/ossf/scorecard/v5/log"
@@ -59,13 +62,13 @@ func init() {
 // Function Get will get the scorecard clients and create them if they don't
 // exist. The github repo is initialized, which means the tarball is
 // downloaded.
-func GetLocal(ctx context.Context, fullRepo string) (*LocalScClient, error) {
+func GetLocal(ctx context.Context, c *github.Client, fullRepo string) (*LocalScClient, error) {
 	mMutex.Lock()
 	if scc, ok := localScClients[fullRepo]; ok {
 		mMutex.Unlock()
 		return scc, nil
 	}
-	scc, err := createLocal(ctx, fullRepo)
+	scc, err := createLocal(ctx, c, fullRepo)
 	if err != nil {
 		mMutex.Unlock()
 		return nil, err
@@ -75,40 +78,48 @@ func GetLocal(ctx context.Context, fullRepo string) (*LocalScClient, error) {
 	return scc, nil
 }
 
-func createLocal(ctx context.Context, fullRepo string) (*LocalScClient, error) {
+func createLocal(ctx context.Context, c *github.Client, fullRepo string) (*LocalScClient, error) {
 	ptn := strings.ReplaceAll(fullRepo, "/", "-")
 	path, err := os.MkdirTemp("/tmp", ptn)
 	if err != nil {
 		return nil, err
 	}
+
+	org := strings.Split(fullRepo, "/")[0]
+	instToken, err := ghclients.GetInstallationAccessToken(ctx, c, org)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't get installation access token for %s: %w", fullRepo, err)
+	}
+
+	cloneURL := fmt.Sprintf("https://x-access-token:%s@github.com/%s.git", instToken, fullRepo)
 	// TODO: consider narrowing this down to just .github/workflow for Dangerous-Workflow policy?
 	r, err := git.PlainClone(path, false, &git.CloneOptions{
-		URL: fullRepo,
+		URL: cloneURL,
 		// Progress: os.Stdout,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Clone: %w", err)
 	}
 	// Fetch all refs
 	err = r.Fetch(&git.FetchOptions{
 		RefSpecs: []config.RefSpec{"+refs/*:refs/*"},
 	})
-	if err != nil {
-		return nil, err
+	if err != nil && !strings.Contains(err.Error(), "already up-to-date") {
+		return nil, fmt.Errorf("Fetch: %w", err)
 	}
 	wt, err := r.Worktree()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Worktree: %w", err)
 	}
 
 	scr, err := localrepoMakeLocalRepo(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("MakeLocalRepo: %w", err)
 	}
 	l := log.NewLogger(log.InfoLevel)
 	lrc := localrepoCreateLocalDirClient(ctx, l)
 	if err := lrc.InitRepo(scr, defaultGitRef, 0); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("InitRepo: %w", err)
 	}
 	return &LocalScClient{
 		localGitRepo:      r,

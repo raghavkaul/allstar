@@ -104,7 +104,7 @@ func (b Workflow) Check(ctx context.Context, c *github.Client, owner,
 		Msg("Check repo enabled")
 
 	fullName := fmt.Sprintf("%s/%s", owner, repo)
-	lsc, err := local.GetLocal(ctx, fullName)
+	lsc, err := local.GetLocal(ctx, c, fullName)
 	if err != nil {
 		return nil, err
 	}

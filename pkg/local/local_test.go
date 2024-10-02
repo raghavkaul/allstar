@@ -15,31 +15,50 @@ package local
 
 import (
 	"context"
+	"net/http"
 	"sort"
 	"testing"
+
+	"github.com/ossf/allstar/pkg/ghclients"
 )
 
-func TestListUpstreamBranches(t *testing.T) {
+func Test_LocalCheckout(t *testing.T) {
 	tests := []struct {
+		desc     string
 		repo     string
 		expected []string
 	}{
 		{
-			repo:     "https://github.com/ossf/allstar",
-			expected: []string{"main", "prod-temp"},
+			desc:     "basic repo",
+			repo:     "google-test/.allstar",
+			expected: []string{"master"},
 		},
 	}
 
-	for _, tt := range tests {
-		ctx := context.Background()
-		lsc, err := GetLocal(ctx, tt.repo)
+	ctx := context.Background()
+	ghc, err := ghclients.NewGHClients(ctx, http.DefaultTransport)
+	if err != nil {
+		t.Errorf("NewGHClients: %+v", err)
+	}
 
-		if err != nil {
-			t.Errorf("GetLocal: %+v", err)
+	// TODO: Test all InstallationIDs
+	gc, err := ghc.Get(0)
+	if err != nil {
+		t.Errorf("Get %d: %+v", 0, err)
+	}
+
+	// rlo := github.OrganizationsListOptions{}
+	// repos, _, _ := gc.Organizations.ListAll(ctx, &rlo)
+	// fmt.Printf("reached mid: %+v\n", repos)
+
+	for _, tt := range tests {
+		t.Logf("%s", tt.desc)
+		lsc, err := GetLocal(ctx, gc, tt.repo)
+		if lsc == nil || err != nil {
+			t.Fatalf("GetLocal: %+v", err)
 		}
 
 		branches, err := lsc.ListUpstreamBranches()
-
 		if err != nil {
 			t.Errorf("ListUpstreamBranches: %+v", err)
 		}
@@ -47,6 +66,14 @@ func TestListUpstreamBranches(t *testing.T) {
 		if !slicesEqUnordered(branches, tt.expected) {
 			t.Errorf("wrong upstream branches, expected: %+v actual %+v", tt.expected, branches)
 		}
+
+		for _, b := range branches {
+			err = lsc.Checkout(b)
+			if err != nil {
+				t.Errorf("Checkout %s: %+v", b, err)
+			}
+		}
+
 	}
 }
 
